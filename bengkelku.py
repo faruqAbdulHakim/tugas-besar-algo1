@@ -51,7 +51,7 @@ def sell():
             dgudang[user_input-1]["Stok"] = int(dgudang[user_input-1]["Stok"]) - total_sold
             dtransaksi.append({
             "Tanggal": datetime.date.today().strftime("%d-%m-%Y"), 
-            "Aktivitas":"Penjualan", 
+            "Aktivitas":"Jual", 
             "Nama Barang": dgudang[user_input-1]["Nama Barang"],
             "Jumlah":total_sold, 
             "Harga": price
@@ -61,7 +61,7 @@ def sell():
                 dgudang.pop(user_input-1)
 
         else:
-            print("Input Jumlah Invalid!")
+            print("Input Invalid!")
             return
     else: 
         print("Input Invalid!")
@@ -90,7 +90,6 @@ def buy():
             "Harga Jual": price
             })
         price = int_input("Total harga Pembelian: ")
-
     elif 0 < user_input < len(dgudang):
         name = dgudang[user_input-1]["Nama Barang"]
         total = int_input("Jumlah barang yang dibeli: ")
@@ -100,9 +99,10 @@ def buy():
     else: 
         print("Input Invalid!")
         return
+
     dtransaksi.append({
         "Tanggal": datetime.date.today().strftime("%d-%m-%Y"), 
-        "Aktivitas":"Pembelian", 
+        "Aktivitas":"Beli", 
         "Nama Barang": name,
         "Jumlah":total, 
         "Harga": -price
@@ -138,15 +138,22 @@ def report():
     print(f"|{'Total Transaksi: ':>78}{total_price:^20}", end='|\n')
     print("="*100)
 
-def del_report():
+def clear_report():
     report()
     isContinue = input("Apakah anda yakin ingin menghapus laporan keuangan? (y/t)").lower()
     if isContinue != 'y' and isContinue != 't':
         print("Invalid Input!")
         return
     elif isContinue == 'y':
+        tmp_backup = list(csv.DictReader(open("dataset_transaksi.csv")))
         with open("dataset_transaksi.csv", "w") as f:
             f.write("Tanggal,Aktivitas,Nama Barang,Jumlah,Harga")
+        date_now = datetime.date.today().strftime('%d %B %Y')
+        file_loc = "backups/" + str(date_now)+'.csv'
+        try:
+            write(tmp_backup, file_loc)
+        except:
+            print("Data Kosong!")
 
 def write(tmp, filename):
     with open(filename, "w") as f:
@@ -162,7 +169,7 @@ while True:
     print("[2] Catat Penjualan")
     print("[3] Catat Pembelian")
     print("[4] Laporan Keuangan")
-    print("[5] Hapus Laporan Keuangan")
+    print("[5] Bersihkan Laporan Keuangan")
     print("[0] Keluar Transaksi")
     user_input = int_input("Pilihan anda: ")
     if user_input == 1:
@@ -176,7 +183,7 @@ while True:
     elif user_input == 4:
         report()
     elif user_input == 5:
-        del_report()
+        clear_report()
     elif user_input == 0: 
         print(" Program Berakhir ".center(40, "="))
         break
