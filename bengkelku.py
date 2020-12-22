@@ -152,6 +152,7 @@ def clear_report():
         file_loc = "backups/" + str(date_now)+'.csv'
         try:
             write(tmp_backup, file_loc)
+            print("Lokasi Backup Data: ", file_loc)
         except:
             print("Data Kosong!")
 
