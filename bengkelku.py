@@ -7,29 +7,30 @@ def clearscreen():
 
 def int_input(note):
     try:
-        return int(input(note))
+        x = int(input(note))
+        return x
     except: 
-        return -1
+        return int_input(note)
 
 def login():
     clearscreen()
     print(" Login ".center(30, "="))
     USERNAME = input(f"{'Username':12}: ")
     KEY = input(f"{'Password':12}: ")
-    if USERNAME != "bang" or KEY != "beng":
+    if USERNAME != "BengkelKu" or KEY != "2021Sukses":
         login()
 
-def show():
-    clearscreen()
-    data = csv.DictReader(open("dataset_gudang.csv"))
+def show(data1):
+    # Print Header tabel
     print(" Persediaan ".center(66,"="))
     print(f"| {'No':^5}", end='| ')
     print(f"{'Nama Barang':<25}", end='| ')
     print(f"{'Stok':<10}", end='| ')
     print(f"{'Harga Jual':<17}", end='|\n')
     print("="*66)
+    # Print isi Tabel
     count = 0
-    for i in data: 
+    for i in data1: 
         count += 1
         print(f"| {(count):^5}", end='| ')
         print(f"{i['Nama Barang']:<25}", end='| ')
@@ -37,85 +38,102 @@ def show():
         print(f"Rp {int(i['Harga Jual']):<14,}", end='|\n')
     print("="*66)
 
-def sell():
-    dgudang = list(csv.DictReader(open("dataset_gudang.csv")))
-    dtransaksi = list(csv.DictReader(open("dataset_transaksi.csv")))
-    user_input = int_input("Pilih |No| produk yang dijual: ")
-    if 1 <= user_input <= len(dgudang):
-        total_sold = int_input("Jumlah barang yang terjual: ")
-        if 1 <= total_sold <= int(dgudang[user_input-1]["Stok"]):
-            services = int_input("Besar biaya jasa: ")
-            if services == -1 : services = 0
-            price = int(dgudang[user_input-1]["Harga Jual"]) * total_sold + services
+def sell(data1, data2):
 
-            dgudang[user_input-1]["Stok"] = int(dgudang[user_input-1]["Stok"]) - total_sold
-            dtransaksi.append({
+    # Menampilkan persediaan
+    show(data1)
+    # Memilih barang yang akan dijual
+    user_input = int_input("Pilih |No| produk yang dijual: ")
+
+    # Apakah nomor barang yang dimasukkan valid?
+    if 1 <= user_input <= len(data1):
+        # Jumlah barang yang akan dijual
+        total_sold = int_input("Jumlah barang yang terjual: ")
+        stock = int(data1[user_input-1]["Stok"])
+
+        # Apakah jumlah barang sesuai dengan stock yang tersedia?
+        if 1 <= total_sold <= stock:
+            # Menentukan biaya jasa
+            services = int_input("Besar biaya jasa: ")
+            # Menghitung total biaya
+            price = int(data1[user_input-1]["Harga Jual"]) * total_sold + services
+            # Mengubah stock persediaan dengan mengurangi jumlah barang yang terjual
+            data1[user_input-1]["Stok"] = stock - total_sold
+
+            # Mencatat pada daftar transaksi
+            data2.append({
             "Tanggal": datetime.date.today().strftime("%d-%m-%Y"), 
             "Aktivitas":"Jual", 
-            "Nama Barang": dgudang[user_input-1]["Nama Barang"],
+            "Nama Barang": data1[user_input-1]["Nama Barang"],
             "Jumlah":total_sold, 
             "Harga": price
             })
 
-            if dgudang[user_input-1]["Stok"] == 0:
-                dgudang.pop(user_input-1)
+            # Menghapus barang di data persediaan jika stock barang habis
+            if data1[user_input-1]["Stok"] == 0:
+                data1.pop(user_input-1)
 
+    # Keluar jika terdapat input invalid pada inputan nomor / stock barang
         else:
             print("Input Invalid!")
             return
     else: 
         print("Input Invalid!")
         return
-    write(dgudang, "dataset_gudang.csv")
-    write(dtransaksi, "dataset_transaksi.csv")
-    clearscreen()
-    print("Berhasil Melakukan Pencatatan Penjualan")
+    
+    # Mencatat ulang pada data gudang dan data transaksi
+    write(data1, "dataset_gudang.csv")
+    write(data2, "dataset_transaksi.csv")
+    print("Berhasil Melakukan Pencatatan Penjualan".center(66, "="))
 
-def buy():
-    dgudang = list(csv.DictReader(open("dataset_gudang.csv")))
-    dtransaksi = list(csv.DictReader(open("dataset_transaksi.csv")))
-    print("\nMasukkan [0] untuk menambah produk baru")
-    user_input = int_input("Pilih |No| produk yang akan ditambah: ")
+def buy(data1, data2):
+    # Memilih barang yang akan di beli(restock) atau menambahkan barang baru pada daftar
+    show(data1)
+    user_input = int_input("[0] untuk menambah produk baru\nPilih |No| produk yang akan ditambah: ")
 
+    # Jika menambahkan barang baru
     if user_input == 0:
         name = input("Nama barang: ")
         total = int_input("Jumlah barang yang dibeli: ")
-        price = int_input("Harga satuan barang: ")
-        if total == -1 or price == -1:
-            print("Harga yang anda masukkan invalid!")
-            return
-        dgudang.append({
+        price = int_input("Harga satuan barang ketika dijual: ")
+        # Mencatat pada daftar gudang
+        data1.append({
             "Nama Barang": name, 
             "Stok": total, 
             "Harga Jual": price
             })
+        # Total biaya yang dikeluarkan
         price = int_input("Total harga Pembelian: ")
-    elif 0 < user_input < len(dgudang):
-        name = dgudang[user_input-1]["Nama Barang"]
-        total = int_input("Jumlah barang yang dibeli: ")
-        price = int_input("Total harga pembelian: ")
 
-        dgudang[user_input-1]["Stok"] = int(dgudang[user_input-1]["Stok"]) + total
+    # Jika menambahkan barang yang sudah ada
+    elif 0 < user_input <= len(data1):
+        name = data1[user_input-1]["Nama Barang"]
+        total = int_input("Jumlah barang yang dibeli: ")
+        # Total biaya yang dikeluarkan
+        price = int_input("Total harga pembelian: ")
+        # Menambahkan stock barang
+        data1[user_input-1]["Stok"] = int(data1[user_input-1]["Stok"]) + total
+    
+    # Jika inputan invalid
     else: 
         print("Input Invalid!")
         return
-
-    dtransaksi.append({
+    # Menambahkan data transaksi baru
+    data2.append({
         "Tanggal": datetime.date.today().strftime("%d-%m-%Y"), 
         "Aktivitas":"Beli", 
         "Nama Barang": name,
         "Jumlah":total, 
         "Harga": -price
         })
-    write(dgudang, "dataset_gudang.csv")
-    write(dtransaksi, "dataset_transaksi.csv")
-    clearscreen()
-    print("Berhasil Melakukan Pencatatan Pembelian")
+    # Mencatat ulang pada data gudang dan data transaksi
+    write(data1, "dataset_gudang.csv")
+    write(data2, "dataset_transaksi.csv")
+    print("Berhasil Melakukan Pencatatan Pembelian".center(66, "="))
 
-def report():
-    clearscreen()
+def report(data2):
+    # Print header tabel
     print("Laporan Transaksi".center(100,"="))
-    dtransaksi = list(csv.DictReader(open("dataset_transaksi.csv")))
     print(f"| {'No':^5}", end='| ')
     print(f"{'Tanggal':<15}", end='| ')
     print(f"{'Aktivitas':<15}", end='| ')
@@ -123,8 +141,9 @@ def report():
     print(f"{'Jumlah':<10}", end='| ')
     print(f"{'Harga':<17}",end='|\n')
     print("="*100)
+    # Print isi tabel
     count = 0
-    for i in dtransaksi: 
+    for i in data2: 
         count += 1
         print(f"| {(count):^5}", end='| ')
         print(f"{i['Tanggal']:<15}", end='| ')
@@ -133,28 +152,28 @@ def report():
         print(f"{i['Jumlah']:<10}", end='| ')
         print(f"Rp {int(i['Harga']):<14,}", end='|\n')
     print("="*100)
-    total_price = sum([int(price['Harga']) for price in dtransaksi])
+    total_price = sum([int(price['Harga']) for price in data2])
     total_price = "Rp " + "{:,}".format(total_price)
     print(f"|{'Total Transaksi: ':>78}{total_price:^20}", end='|\n')
     print("="*100)
 
-def clear_report():
-    report()
+def clear_report(data2):
+    report(data2)
     isContinue = input("Apakah anda yakin ingin menghapus laporan keuangan? (y/t)").lower()
+    # Memutuskan apakah akan menghapus data?
     if isContinue != 'y' and isContinue != 't':
-        print("Invalid Input!")
-        return
+        clearscreen()
+        clear_report(data2)
     elif isContinue == 'y':
-        tmp_backup = list(csv.DictReader(open("dataset_transaksi.csv")))
-        with open("dataset_transaksi.csv", "w") as f:
-            f.write("Tanggal,Aktivitas,Nama Barang,Jumlah,Harga")
         date_now = datetime.date.today().strftime('%d %B %Y')
         file_loc = "backups/" + str(date_now)+'.csv'
         try:
-            write(tmp_backup, file_loc)
+            write(data2, file_loc)
             print("Lokasi Backup Data: ", file_loc)
         except:
-            print("Data Kosong!")
+            print("Data Transaksi Kosong!")
+        with open("dataset_transaksi.csv", "w") as f:
+            f.write("Tanggal,Aktivitas,Nama Barang,Jumlah,Harga")
 
 def write(tmp, filename):
     with open(filename, "w") as f:
@@ -162,7 +181,7 @@ def write(tmp, filename):
         dw.writeheader()
         dw.writerows(tmp)
 
-login()
+# login()
 while True:
     clearscreen()
     print(" Menu ".center(40, "="))
@@ -173,19 +192,28 @@ while True:
     print("[5] Bersihkan Laporan Keuangan")
     print("[0] Keluar Transaksi")
     user_input = int_input("Pilihan anda: ")
+
+    clearscreen()
+    data1 = list(csv.DictReader(open("dataset_gudang.csv")))
+    data2 = list(csv.DictReader(open("dataset_transaksi.csv")))
+
     if user_input == 1:
-        show()
+        show(data1)
+
     elif user_input == 2:
-        show()
-        sell()
+        sell(data1, data2)
+
     elif user_input == 3:
-        show()
-        buy()      
+        buy(data1, data2)   
+
     elif user_input == 4:
-        report()
+        report(data2)
+
     elif user_input == 5:
-        clear_report()
+        clear_report(data2)
+
     elif user_input == 0: 
         print(" Program Berakhir ".center(40, "="))
         break
+    
     input("\nTekan [Enter] untuk kembali ke menu utama...")
