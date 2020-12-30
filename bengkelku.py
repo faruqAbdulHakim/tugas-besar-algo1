@@ -22,16 +22,16 @@ def login():
         login()
 
 def show(data1):
-    print(" Persediaan ".center(68,'='))
-    print(f"|{'No':^6}| {'Nama Barang':<25}| {'Stok':<10}| {'Harga Jual':<19}|")
-    print("="*68)
+    print(" Persediaan ".center(73,'='))
+    print(f"|{'No':^6}| {'Nama Barang':<30}| {'Stok':<10}| {'Harga Jual':<19}|")
+    print("="*73)
 
     num = 0
     for i in data1: 
         num += 1
         name, stock, price = i['Nama Barang'], i['Stok'], i['Harga Jual']
-        print(f"|{num:^6}| {name:<25}| {stock:<10}|Rp {int(price):16,} |")
-    print('='*68)
+        print(f"|{num:^6}| {name:<30}| {stock:<10}|Rp {int(price):16,} |")
+    print('='*73)
 
 def sell(data1, data2):
     show(data1)
