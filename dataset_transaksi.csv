@@ -1,8 +1,1 @@
-Tanggal,Aktivitas,Nama Barang,Jumlah,Harga
-20-12-2020,Beli,rantai,4,200000
-20-12-2020,Beli,hehe,1,1
-20-12-2020,Jual,hehe,1,1
-20-12-2020,Beli,oli,3,-70000
-21-12-2020,Jual,rantai,4,580000
-21-12-2020,Jual,oli,2,50000
-21-12-2020,Jual,oli,1,24000
+Tanggal,Aktivitas,Nama Barang,Jumlah,Harga,Keterangan
