@@ -73,6 +73,7 @@ def sell(data1, data2):
         print("Input Invalid!")
 
 def service(data2):
+    print(" Service ".center(30, "="))
     note = input("Keterangan: ")
     price = int_input("Biaya Service: ")
      
